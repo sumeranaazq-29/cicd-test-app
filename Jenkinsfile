@@ -31,7 +31,7 @@ pipeline {
         stage('Database Check') {
             steps {
                 echo 'Checking PostgreSQL connectivity...'
-                sh 'PGPASSWORD=$DB_PASSWORD psql -h localhost -U postgres -c "SELECT 1;"'
+                sh 'PGPASSWORD=JenkinsCheck123 psql -h 172.31.34.237 -U postgres -c "SELECT 1;"'
             }
         }
 
