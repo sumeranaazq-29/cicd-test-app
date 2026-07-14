@@ -45,7 +45,14 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo 'Deploying new code live...'
-                // Deployment steps will go here
+                sshagent(credentials: ['app-server-ssh']) {
+                    sh '''
+                        ssh -o StrictHostKeyChecking=no ubuntu@172.31.34.237 "mkdir -p ~/deployed-frontend ~/deployed-backend"
+                        scp -o StrictHostKeyChecking=no -r test-frontend/build/* ubuntu@172.31.34.237:~/deployed-frontend/
+                        scp -o StrictHostKeyChecking=no -r TestApiBackend/bin/Debug/net8.0/* ubuntu@172.31.34.237:~/deployed-backend/
+                    '''
+                }
+                echo 'Deployment files copied to App Server successfully.'
             }
         }
     }
