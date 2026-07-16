@@ -32,3 +32,9 @@ jobs:
         run: |
           npm install
           npm run build
+
+      - name: Database Check
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y postgresql-client
+          PGPASSWORD=JenkinsCheck123 psql -h 13.206.119.124 -U postgres -c "SELECT 1;"
