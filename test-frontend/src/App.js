@@ -6,7 +6,7 @@ function App() {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('http://13.206.84.228:5000/api/test')
+    fetch('http://13.206.119.124:5000/api/test')
       .then((res) => res.json())
       .then((data) => setData(data))
       .catch((err) => setError(err.message));
