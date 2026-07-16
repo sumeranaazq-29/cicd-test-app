@@ -37,4 +37,46 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y postgresql-client
-          PGPASSWORD=JenkinsCheck123 psql -h 13.206.119.124 -U postgres -c "SELECT 1;"
+          PGPASSWORD=JenkinsCheck123 psql -h ${{ secrets.APP_SERVER_IP }} -U postgres -c "SELECT 1;"
+
+      - name: Upload frontend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: test-frontend/build
+
+      - name: Upload backend build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-build
+          path: TestApiBackend/bin/Debug/net8.0
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: production
+
+    steps:
+      - name: Download frontend build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend-build
+
+      - name: Download backend build artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: backend-build
+          path: backend-build
+
+      - name: Deploy to App Server via SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.APP_SERVER_SSH_KEY }}" > ~/.ssh/deploy_key
+          chmod 600 ~/.ssh/deploy_key
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key ubuntu@${{ secrets.APP_SERVER_IP }} "mkdir -p ~/deployed-frontend ~/deployed-backend"
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key -r frontend-build/* ubuntu@${{ secrets.APP_SERVER_IP }}:~/deployed-frontend/
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/deploy_key -r backend-build/* ubuntu@${{ secrets.APP_SERVER_IP }}:~/deployed-backend/
+
+      - name: Deployment success message
+        run: echo "Deployment completed successfully via GitHub Actions."
